@@ -3,138 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Brick Game</title>
+    <title>Retro Brick Game - Hardcore</title>
     <style>
         :root {
-            --lcd-bg: #9ead86; /* Тот самый цвет старого ЖК-экрана */
-            --block-dark: #000;
-            --block-light: rgba(0, 0, 0, 0.05);
+            --lcd-bg: #9ead86;
+            --dark-color: #000;
         }
 
         body {
-            background: #333;
+            background: #222;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'monospace';
             touch-action: none;
+            flex-direction: column;
         }
 
         #device {
             background: var(--lcd-bg);
-            padding: 20px;
-            border: 10px solid #222;
-            border-radius: 10px;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.2);
+            padding: 15px;
+            border: 8px solid #444;
+            border-radius: 5px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
-        .main-screen {
-            border: 4px solid #444;
-            position: relative;
-        }
-
-        canvas {
-            display: block;
-            background: var(--lcd-bg);
-        }
+        canvas { background: var(--lcd-bg); display: block; }
+        .main-canvas { border: 2px solid #333; }
 
         .side-panel {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            min-width: 100px;
-            text-transform: uppercase;
+            min-width: 80px;
+            color: rgba(0,0,0,0.8);
             font-weight: bold;
-            color: rgba(0, 0, 0, 0.8);
+            text-transform: uppercase;
         }
 
-        .stat-label { font-size: 14px; margin-bottom: 2px; }
-        .stat-value { font-size: 24px; margin-bottom: 15px; text-align: right; letter-spacing: 2px; }
-
-        .next-box {
-            width: 80px;
-            height: 80px;
-            border: 2px solid #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Кнопки управления */
-        .controls {
-            position: fixed;
-            bottom: 30px;
-            display: grid;
-            grid-template-columns: repeat(3, 80px);
-            gap: 15px;
-        }
-
-        .btn {
-            height: 70px;
-            background: #222;
-            border-radius: 50%;
-            color: white;
-            border: 3px solid #444;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 0 #000;
-        }
-
-        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .stat-box { margin-bottom: 15px; }
+        .label { font-size: 12px; }
+        .value { font-size: 20px; text-align: right; }
 
         #overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(158, 173, 134, 0.9);
+            background: rgba(158, 173, 134, 0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100;
+            text-align: center;
         }
+
+        .controls {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            gap: 10px;
+        }
+
+        .btn {
+            height: 60px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 50%;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .btn:active { transform: translateY(3px); box-shadow: none; }
     </style>
 </head>
 <body>
 
 <div id="device">
     <div id="overlay">
-        <h2>PAUSE</h2>
-        <button onclick="togglePause()" style="padding:10px 20px; background:#000; color:#fff; border:none;">RESUME</button>
-        <button onclick="resetGame()" style="padding:10px 20px; margin-top:10px; background:none; border:1px solid #000;">RESET</button>
+        <h1 id="status-text">ПАУЗА</h1>
+        <button id="action-btn" onclick="togglePause()" style="padding:10px 20px; background:#000; color:#fff; border:none; cursor:pointer;">ИГРАТЬ</button>
     </div>
 
-    <div class="main-screen">
-        <canvas id="tetris" width="200" height="400"></canvas>
-    </div>
+    <canvas id="tetris" class="main-canvas" width="200" height="400"></canvas>
 
     <div class="side-panel">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" id="score">0</div>
-        
-        <div class="stat-label">Level</div>
-        <div class="stat-value" id="level">1</div>
-
-        <div class="stat-label">Next</div>
-        <div class="next-box">
-            <canvas id="next" width="80" height="80"></canvas>
+        <div class="stat-box">
+            <div class="label">Score</div>
+            <div class="value" id="score">0</div>
         </div>
-        
-        <div style="margin-top: auto; font-size: 12px;" onclick="togglePause()">II PAUSE</div>
+        <div class="stat-box">
+            <div class="label">Level</div>
+            <div class="value" id="level">1</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">Next</div>
+            <canvas id="next" width="60" height="60" style="border:1px solid #333; margin-top:5px;"></canvas>
+        </div>
+        <div style="margin-top:auto; font-size: 10px; cursor:pointer;" onclick="togglePause()">[ PAUSE ]</div>
     </div>
 </div>
 
 <div class="controls">
     <div class="btn" style="grid-column: 2" onclick="playerRotate()">↻</div>
-    <div class="btn" style="grid-column: 1" onclick="playerMove(-1)">←</div>
-    <div class="btn" style="grid-column: 2" onclick="playerDrop()">↓</div>
-    <div class="btn" style="grid-column: 3" onclick="playerMove(1)">→</div>
+    <div class="btn" onclick="playerMove(-1)">←</div>
+    <div class="btn" onclick="playerDrop()">↓</div>
+    <div class="btn" onclick="playerMove(1)">→</div>
 </div>
 
 <script>
@@ -143,64 +124,53 @@
     const nextCanvas = document.getElementById('next');
     const nextContext = nextCanvas.getContext('2d');
 
-    const BLOCK_SIZE = 20;
-    context.scale(BLOCK_SIZE, BLOCK_SIZE);
-    nextContext.scale(BLOCK_SIZE, BLOCK_SIZE);
+    context.scale(20, 20);
+    nextContext.scale(15, 15);
 
-    // Отрисовка ретро-блока (квадрат в квадрате)
     function drawBlock(ctx, x, y, active = true) {
         ctx.fillStyle = active ? '#000' : 'rgba(0,0,0,0.05)';
-        ctx.fillRect(x + 0.1, y + 0.1, 0.8, 0.8);
-        ctx.strokeStyle = active ? '#9ead86' : 'rgba(158,173,134,0.1)';
+        ctx.fillRect(x + 0.05, y + 0.05, 0.9, 0.9);
+        ctx.strokeStyle = active ? '#9ead86' : 'transparent';
         ctx.lineWidth = 0.1;
-        ctx.strokeRect(x + 0.25, y + 0.25, 0.5, 0.5);
-        ctx.strokeRect(x + 0.1, y + 0.1, 0.8, 0.8);
+        ctx.strokeRect(x + 0.2, y + 0.2, 0.6, 0.6);
     }
 
     function createPiece(type) {
-        if (type === 'I') return [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]];
-        if (type === 'L') return [[0,1,0],[0,1,0],[0,1,1]];
-        if (type === 'J') return [[0,1,0],[0,1,0],[1,1,0]];
-        if (type === 'O') return [[1,1],[1,1]];
-        if (type === 'Z') return [[1,1,0],[0,1,1],[0,0,0]];
-        if (type === 'S') return [[0,1,1],[1,1,0],[0,0,0]];
-        if (type === 'T') return [[0,1,0],[1,1,1],[0,0,0]];
+        const p = {
+            'T': [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+            'O': [[1, 1], [1, 1]],
+            'L': [[0, 1, 0], [0, 1, 0], [0, 1, 1]],
+            'J': [[0, 1, 0], [0, 1, 0], [1, 1, 0]],
+            'I': [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]],
+            'S': [[0, 1, 1], [1, 1, 0], [0, 0, 0]],
+            'Z': [[1, 1, 0], [0, 1, 1], [0, 0, 0]],
+        };
+        return p[type];
     }
 
     const arena = Array.from({length: 20}, () => new Array(10).fill(0));
     const player = { pos: {x: 0, y: 0}, matrix: null, next: null, score: 0, level: 1 };
 
     function draw() {
-        // Очистка фона
         context.fillStyle = '#9ead86';
         context.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Сетка фоновых (пустых) блоков
-        for (let y = 0; y < 20; y++) {
-            for (let x = 0; x < 10; x++) {
-                drawBlock(context, x, y, false);
-            }
-        }
+        // Фоновая сетка
+        for(let y=0; y<20; y++) for(let x=0; x<10; x++) drawBlock(context, x, y, false);
 
-        // Отрисовка застывших блоков
-        arena.forEach((row, y) => row.forEach((val, x) => {
-            if (val) drawBlock(context, x, y);
-        }));
-
-        // Отрисовка активной фигуры
+        arena.forEach((row, y) => row.forEach((val, x) => { if(val) drawBlock(context, x, y); }));
         player.matrix.forEach((row, y) => row.forEach((val, x) => {
-            if (val) drawBlock(context, x + player.pos.x, y + player.pos.y);
+            if(val) drawBlock(context, x + player.pos.x, y + player.pos.y);
         }));
 
-        // Отрисовка следующей фигуры
+        // Отрисовка следующей
         nextContext.fillStyle = '#9ead86';
         nextContext.fillRect(0, 0, 4, 4);
         player.next.forEach((row, y) => row.forEach((val, x) => {
-            if (val) drawBlock(nextContext, x, y);
+            if(val) drawBlock(nextContext, x, y);
         }));
     }
 
-    // --- Логика игры (упрощенно) ---
     function collide(arena, player) {
         const [m, o] = [player.matrix, player.pos];
         for (let y = 0; y < m.length; ++y) {
@@ -217,25 +187,59 @@
         }));
     }
 
-    function rotate(matrix) {
-        for (let y = 0; y < matrix.length; ++y) {
-            for (let x = 0; x < y; ++x) [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+    function arenaSweep() {
+        let rowCount = 0;
+        outer: for (let y = arena.length - 1; y > 0; --y) {
+            for (let x = 0; x < arena[y].length; ++x) if (arena[y][x] === 0) continue outer;
+            const row = arena.splice(y, 1)[0].fill(0);
+            arena.unshift(row);
+            ++y;
+            rowCount++;
         }
-        matrix.forEach(row => row.reverse());
+        if (rowCount > 0) {
+            player.score += rowCount * 10 * player.level;
+            player.level = Math.floor(player.score / 50) + 1; // Повышаем уровень каждые 50 очков
+            updateStats();
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('score').innerText = player.score;
+        document.getElementById('level').innerText = player.level;
     }
 
     function playerReset() {
         const pieces = 'ILJOTSZ';
-        if (!player.next) player.next = createPiece(pieces[pieces.length * Math.random() | 0]);
+        if(!player.next) player.next = createPiece(pieces[pieces.length * Math.random() | 0]);
         player.matrix = player.next;
         player.next = createPiece(pieces[pieces.length * Math.random() | 0]);
         player.pos.y = 0;
         player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+        
+        // ПРОВЕРКА ПРОИГРЫША
         if (collide(arena, player)) {
-            arena.forEach(row => row.fill(0));
-            player.score = 0;
-            player.level = 1;
+            gameOver();
         }
+    }
+
+    function gameOver() {
+        paused = true;
+        document.getElementById('status-text').innerText = "ИГРА ОКОНЧЕНА";
+        document.getElementById('action-btn').innerText = "ЗАНОВО";
+        document.getElementById('action-btn').onclick = resetGame;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function resetGame() {
+        arena.forEach(row => row.fill(0));
+        player.score = 0;
+        player.level = 1;
+        updateStats();
+        playerReset();
+        paused = false;
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('status-text').innerText = "ПАУЗА";
+        document.getElementById('action-btn').onclick = togglePause;
     }
 
     function playerDrop() {
@@ -250,23 +254,6 @@
         dropCounter = 0;
     }
 
-    function arenaSweep() {
-        let rowsCleared = 0;
-        outer: for (let y = arena.length - 1; y > 0; --y) {
-            for (let x = 0; x < arena[y].length; ++x) if (arena[y][x] === 0) continue outer;
-            const row = arena.splice(y, 1)[0].fill(0);
-            arena.unshift(row);
-            ++y;
-            rowsCleared++;
-        }
-        if (rowsCleared > 0) {
-            player.score += rowsCleared * 10 * player.level;
-            player.level = Math.floor(player.score / 100) + 1;
-            document.getElementById('score').innerText = player.score;
-            document.getElementById('level').innerText = player.level;
-        }
-    }
-
     function playerMove(dir) {
         if (paused) return;
         player.pos.x += dir;
@@ -276,13 +263,22 @@
     function playerRotate() {
         if (paused) return;
         const pos = player.pos.x;
-        rotate(player.matrix);
         let offset = 1;
+        const m = player.matrix;
+        for (let y = 0; y < m.length; ++y) {
+            for (let x = 0; x < y; ++x) [m[x][y], m[y][x]] = [m[y][x], m[x][y]];
+        }
+        m.forEach(row => row.reverse());
+        
         while (collide(arena, player)) {
             player.pos.x += offset;
             offset = -(offset + (offset > 0 ? 1 : -1));
-            if (offset > player.matrix[0].length) {
-                rotate(player.matrix); // Назад
+            if (offset > m[0].length) {
+                // отмена поворота если некуда двигать
+                m.forEach(row => row.reverse());
+                for (let y = 0; y < m.length; ++y) {
+                    for (let x = 0; x < y; ++x) [m[x][y], m[y][x]] = [m[y][x], m[x][y]];
+                }
                 player.pos.x = pos;
                 return;
             }
@@ -298,22 +294,14 @@
         document.getElementById('overlay').style.display = paused ? 'flex' : 'none';
     }
 
-    function resetGame() {
-        arena.forEach(row => row.fill(0));
-        player.score = 0;
-        player.level = 1;
-        document.getElementById('score').innerText = "0";
-        document.getElementById('level').innerText = "1";
-        playerReset();
-        togglePause();
-    }
-
     function update(time = 0) {
         const deltaTime = time - lastTime;
         lastTime = time;
         if (!paused) {
             dropCounter += deltaTime;
-            if (dropCounter > (1000 - (player.level * 50))) playerDrop();
+            // ФОРМУЛА УСКОРЕНИЯ: базовая секунда уменьшается на каждом уровне
+            const currentSpeed = 1000 * Math.pow(0.8, player.level - 1);
+            if (dropCounter > currentSpeed) playerDrop();
             draw();
         }
         requestAnimationFrame(update);
